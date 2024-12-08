@@ -56,8 +56,8 @@ resource "aws_iam_role_policy" "test_policy" {
                 "s3:GetBucketPolicy"
             ],
             "Resource": [
-                "arn:aws:s3:::${aws_s3_bucket.jay_bucket.id}",
-                "arn:aws:s3:::${aws_s3_bucket.jay_bucket.id}/*"
+                "arn:aws:s3:::${aws_s3_bucket.app_bucket.id}",
+                "arn:aws:s3:::${aws_s3_bucket.app_bucket.id}/*"
             ]
         },
         {
@@ -101,7 +101,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4_http" {
 
 resource "aws_instance" "webapp_instance" {
   ami           = var.ami_id
-  instance_type = var.ami_id
+  instance_type = var.instance_type
   key_name = var.key_pair
   vpc_security_group_ids = [ aws_security_group.jay_sg.id ]
 
