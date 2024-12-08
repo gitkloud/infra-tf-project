@@ -1,8 +1,8 @@
-resource "aws_s3_bucket" "jay_bucket" {
+resource "aws_s3_bucket" "app_bucket" {
   bucket = "${var.project_name}-bucket-bpantala"
 
   tags = {
-    Name        = "jay-bucket-bpantala"
+    Name        = "${var.project_name}-bucket"
     Environment = "Dev"
     CreatedBy = "jay@some.com"
     BillingTeam = "ABC01"
@@ -10,7 +10,7 @@ resource "aws_s3_bucket" "jay_bucket" {
 }
 
 resource "aws_iam_role" "test_role" {
-  name = "${var.project_name}-ec2-${aws_s3_bucket.jay_bucket.id}-role"
+  name = "${var.project_name}-ec2-${aws_s3_bucket.app_bucket.id}-role"
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
   assume_role_policy = jsonencode({
@@ -28,7 +28,7 @@ resource "aws_iam_role" "test_role" {
   })
 
   tags = {
-    Name        = "jay-ec2-${aws_s3_bucket.jay_bucket.id}-role"
+    Name        = "${var.project_name}-ec2-${aws_s3_bucket.app_bucket.id}-role"
     Environment = "Dev"
     CreatedBy = "jay@some.com"
     BillingTeam = "ABC01"
@@ -71,12 +71,12 @@ resource "aws_iam_role_policy" "test_policy" {
 }
 
 resource "aws_security_group" "jay_sg" {
-  name        = "jay-sg"
+  name        = "${var.project_name}-webapp-sg"
   description = "Allow TLS inbound traffic and all outbound traffic"
-  vpc_id      = "vpc-017981d0907d9a5b3"
+  vpc_id      = var.vpc_id
 
   tags = {
-    Name        = "jay-ec2-sg"
+    Name        = "${var.project_name}-ec2-sg"
     Environment = "Dev"
     CreatedBy = "jay@some.com"
     BillingTeam = "ABC01"
@@ -85,7 +85,7 @@ resource "aws_security_group" "jay_sg" {
 
 resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
   security_group_id = aws_security_group.jay_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = var.allow_cidr_range
   from_port         = 22
   ip_protocol       = "tcp"
   to_port           = 22
@@ -93,20 +93,20 @@ resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
 
 resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4_http" {
   security_group_id = aws_security_group.jay_sg.id
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = var.allow_cidr_range
   from_port         = 80
   ip_protocol       = "tcp"
   to_port           = 80
 }
 
-resource "aws_instance" "web" {
-  ami           = "ami-0453ec754f44f9a4a"
-  instance_type = "t2.micro"
-  key_name = "all-purpose-server-key"
+resource "aws_instance" "webapp_instance" {
+  ami           = var.ami_id
+  instance_type = var.ami_id
+  key_name = var.key_pair
   vpc_security_group_ids = [ aws_security_group.jay_sg.id ]
 
   tags = {
-    Name        = "jay-ec2-instance"
+    Name        = "${var.project_name}-ec2-instance"
     Environment = "Dev"
     CreatedBy = "jay@some.com"
     BillingTeam = "ABC01"
